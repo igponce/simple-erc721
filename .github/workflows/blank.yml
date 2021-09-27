@@ -1,0 +1,40 @@
+name: Contract tests
+
+on:  [push, pull_request]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  run-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache solidity and pipx Installations
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.solcx
+          ~/.vvm
+          ~/.local
+        key: ${{ runner.os }}-compiler-cache
+        
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+
+    - name: Install Ganache
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: npm install -g ganache-cli@6.12.2
+
+    - name: Setup Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install brownie
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install eth-brownie
+        
+    - name: run tests
+      run: brownie test

@@ -1,0 +1,22 @@
+name: Check for security
+
+on:  [push]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  run_static_security_analysis:
+    runs_on: ubuntu-latest
+    name: Solidity security analysis
+    steps:
+       - checkout
+         uses: actions/checkout@v2
+       - Run Slither security analysis
+         uses: luisfontes19/slither-static-analysis-action@v0.3.3
+         with:
+          slither-version: '0.6.13'
+          run-npm-install: true
+          high-threshold: 1
+          medium-threshold: 1
+          low-threshold: 1
+          informative-threshold: 10
+          projectPath: "./contracts"

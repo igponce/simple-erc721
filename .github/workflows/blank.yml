@@ -19,4 +19,4 @@ jobs:
            medium-threshold: 1
            low-threshold: 1
            informative-threshold: 10
-           projectPath: "."
+

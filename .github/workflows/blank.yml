@@ -10,6 +10,8 @@ jobs:
     steps:
        - name: checkout
          uses: actions/checkout@v2
+       - name: que tenemos aqui
+         run: echo $PWD ; find . -ls
        - name: Run Slither security analysis
          uses: luisfontes19/slither-static-analysis-action@v0.3.3
          with:

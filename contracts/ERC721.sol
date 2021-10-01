@@ -21,7 +21,7 @@ contract myERC721 {
 
     mapping(uint256 => address) private _tokenowner;  // _tokenowner[tokenId] = address
     mapping(uint256 => uint256) private _autorized;   // _authorized[address] = tokenid  (many addresses -> 1 token)
-    mapping(uint256 => uint256) private _operatorauth; // Authorized operator
+    mapping(address => address) private _authorizedoperator; // Authorized operator ([address] -> operator
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
@@ -50,8 +50,13 @@ contract myERC721 {
 
     }
 
-    function setAprovalForAll(address _operator, bool _approved) external payable{
-
+    function setAprovalForAll(address _operator, bool _approved) external payable {
+        if (_approved) {
+           _authorizedoperator[msg.sender] = _operator;
+        else {
+           _authorizedoperator[msg.sender] = address(0);
+        }
+        emit ApprovalForAll(msf.sender, _operator, _approved)
     }
 
     function getApproved(uint256 _tokenid) external payable{
@@ -59,7 +64,7 @@ contract myERC721 {
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-
+           return _authorizedoperator[_owner] == _operator
     }
 
     // clear all aprovals etc after transfer

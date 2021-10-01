@@ -4,7 +4,7 @@
 // Just the _minimal_ functionality for an Non-fungible-token
 // See https://eips.ethereum.org/EIPS/eip-721 for full spec
 
-pragma solidity >=0.6.6;
+pragma solidity >=0.8.4 ;
 
 // Stuff we need to implement
 //
@@ -19,19 +19,46 @@ pragma solidity >=0.6.6;
 
 contract myERC721 {
 
-    mapping(uint256 => address) private _tokenowner;  // _tokenowner[tokenId] = address
-    mapping(uint256 => uint256) private _autorized;   // _authorized[address] = tokenid  (many addresses -> 1 token)
-    mapping(address => address) private _authorizedoperator; // Authorized operator ([address] -> operator
+    // Token name and symbol
+    string private _name;
+    string private _symbol;
+
+    // Maps token ids to owners
+    // _tokenowner[tokenId] -> owner address
+    mapping(uint256 => address) private _tokenowner;
+
+    // Maps addresses to token count
+    // _tokencount[address] -> #tokens owned by address
+    mapping(address => uint256) private _tokencount;
+
+    // Authorizations for tokens (1 address for each token)
+    // _authorized[token] = address authorized to manipulate this token   
+    mapping(uint256 => address) private _autorized;   
+
+    // Like ERC20 authorizations.
+    // Operator address authorized to work with NFTs from this wallet.
+    // _authorizedop[wallet] = operator
+    mapping(address => address) private _authorizedoperator;
+
+    // Events
 
     event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
+    // Mints an NFT if does not exist
+    function _mint(uint256 _id) private {
+        // check _id does not exit.. yet
+        require(_tokenowner[_id] != address(0)); // Zero address verboten
+        _tokenowner[_id] = tx.origin;
+        _tokencount[tx.origin]++;
+    }
+
     // Count all NFT assigned to an owner
     // _owner must != zero address
-    function balanceOf(address _owner) external view returns (uint256 _count) {
-        require(_owner != address(0x00));
-    /* To Do */
+    function balanceOf(address _owner) external view returns (uint256) {
+        require(_owner != address(0x0));
+        return _tokencount[_owner];
     }
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external payable {
@@ -53,18 +80,20 @@ contract myERC721 {
     function setAprovalForAll(address _operator, bool _approved) external payable {
         if (_approved) {
            _authorizedoperator[msg.sender] = _operator;
-        else {
+        } else {
            _authorizedoperator[msg.sender] = address(0);
         }
-        emit ApprovalForAll(msf.sender, _operator, _approved)
+        emit ApprovalForAll(msg.sender, _operator, _approved);
     }
 
-    function getApproved(uint256 _tokenid) external payable{
+    function getApproved(uint256 _tokenid) external view returns (address) {
+
+       return address(0); // not implemented
 
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-           return _authorizedoperator[_owner] == _operator
+           return _authorizedoperator[_owner] == _operator;
     }
 
     // clear all aprovals etc after transfer

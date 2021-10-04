@@ -17,7 +17,7 @@ pragma solidity >=0.8.4 ;
 // event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
 
 
-contract myERC721 {
+contract SimpleERC721 {
 
     // Token name and symbol
     string private _name;
@@ -42,16 +42,29 @@ contract myERC721 {
 
     // Events
 
-    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
-    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenId);
+    event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenid);
+    event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenid);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
+    // event Debug(address _addr, uint256 _value, string _str);   
+
+    constructor() {
+        // mints two NFT with owner by the contract deployer
+        _mint(1, msg.sender, false);
+        _mint(2, msg.sender, false);
+    }
+
     // Mints an NFT if does not exist
-    function _mint(uint256 _id) private {
-        // check _id does not exit.. yet
-        require(_tokenowner[_id] != address(0)); // Zero address verboten
-        _tokenowner[_id] = tx.origin;
-        _tokencount[tx.origin]++;
+    function _mint(uint256 _id, address _owner, bool _emitMSG) private {
+        require(_owner != address(0), "Zero address owner"); // Cannot crate for Zero address;
+        require(_tokenowner[_id] == address(0)); // If exists (has owner) cannot mint again
+        _tokenowner[_id] = _owner;
+        _tokencount[_owner]++;
+
+        if (_emitMSG) {
+            // This is called if we're not in the constructor
+            emit Transfer(address(0), _owner, _id);
+        }
     }
 
     // Count all NFT assigned to an owner
@@ -70,11 +83,26 @@ contract myERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
+        require(msg.sender == _from || _autorized[_tokenid] == msg.sender);
+        require(_tokenowner[_tokenid] == _from);
+        require(_to != address(0));
+        
+        // Clear authorization first
+        _autorized[_tokenid] = address(0);
+        // delete _authorizedoperator[_tokenid];
 
+
+
+        _tokencount[_from] -= 1;
+        _tokencount[_to] += 1;
+        _tokenowner[_tokenid] = _to;
+
+        emit Transfer(_from, _to, _tokenid);
     }
 
     function approve(address _approves, uint256 _tokenid) external payable {
-
+        require(msg.sender == _tokenowner[_tokenid]);
+        _autorized[_tokenid] = _approves;
     }
 
     function setAprovalForAll(address _operator, bool _approved) external payable {
@@ -87,9 +115,7 @@ contract myERC721 {
     }
 
     function getApproved(uint256 _tokenid) external view returns (address) {
-
-       return address(0); // not implemented
-
+       return _tokenowner[_tokenid];
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
@@ -100,5 +126,6 @@ contract myERC721 {
     function _clearAuth(uint256 _token) private {
         
     }
+
     
 }

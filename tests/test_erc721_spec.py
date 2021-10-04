@@ -67,5 +67,16 @@ def test_simple_transfers(token):
     with reverts():
         # Only owner can transfer tokens
         token.transferFrom(receiver, sender, tokenid, {'from': sender})
-        # Sending to the null address is not alloweD
 
+
+def test_authorization(token):
+
+    alice, bob = [ accounts[x].address for x in range(2) ]
+    tokenid = 1
+
+    token.approve(bob, tokenid, {'from': alice})
+    token.transferFrom(alice, bob, tokenid, {'from': bob})
+    token.transferFrom(bob, alice, tokenid, {'from': bob})
+
+    token.transferFrom(bob, alice, tokenid, {'from': bob})
+    assert token.getApproved(tokenid) == bob

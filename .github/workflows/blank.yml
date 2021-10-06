@@ -30,8 +30,7 @@ jobs:
         python-version: 3.8
 
     - name: Install brownie
-      run:
-        - python3 -m pip install --user pipx
+      run: python3 -m pip install --user pipx
         - python3 -m pipx ensurepath
         - pipx install eth-brownie
         

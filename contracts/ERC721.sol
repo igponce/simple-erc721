@@ -91,8 +91,6 @@ contract SimpleERC721 {
         _autorized[_tokenid] = address(0);
         // delete _authorizedoperator[_tokenid];
 
-
-
         _tokencount[_from] -= 1;
         _tokencount[_to] += 1;
         _tokenowner[_tokenid] = _to;
@@ -115,7 +113,7 @@ contract SimpleERC721 {
     }
 
     function getApproved(uint256 _tokenid) external view returns (address) {
-       return _tokenowner[_tokenid];
+       return _autorized[_tokenid];
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {

@@ -36,7 +36,7 @@ def test_simple_transfers(token):
     ERC721 transfers are tricky.
     There are 3 ways to transfer tokens:
       - A (human?) person does the transfer.
-      - A contract transfer a token 
+      - A contract (or address) transfer a token 
           - ... and it has permission to transfer just one token.
           - ... or it cat transfer any token this account has.
           
@@ -69,14 +69,23 @@ def test_simple_transfers(token):
         token.transferFrom(receiver, sender, tokenid, {'from': sender})
 
 
-def test_authorization(token):
+def test_transfer_with_aproval(token):
 
     alice, bob = [ accounts[x].address for x in range(2) ]
     tokenid = 1
 
     token.approve(bob, tokenid, {'from': alice})
-    token.transferFrom(alice, bob, tokenid, {'from': bob})
-    token.transferFrom(bob, alice, tokenid, {'from': bob})
 
-    token.transferFrom(bob, alice, tokenid, {'from': bob})
-    assert token.getApproved(tokenid) == bob
+    # bob can transfer the token if he's authorized
+    token.transferFrom(alice, bob, tokenid, {'from': bob})
+
+    # after a transfer aprovales are cleared
+    assert token.getApproved(tokenid) != bob
+    assert token.getApproved(tokenid) == '0x0000000000000000000000000000000000000000'
+
+    # new owner can transfer without auth
+    tx = token.transferFrom(bob, alice, tokenid, {'from': bob})
+
+    # and there is a transfer event
+    assert dict(tx.events).get('Transfer') != None
+

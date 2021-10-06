@@ -4,22 +4,36 @@ on:  [push]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  solidity-static-analysis:
-    runs-on: ubuntu-latest
-    name: Solidity security analysis
-    steps:
-       - name: checkout
-         uses: actions/checkout@v2
-       - name: que tenemos aqui
-         run: echo $PWD ; find . -ls
-       - name: Run Slither security analysis
-         uses: arbazkiraak/slither-static-analysis-action@v12
-         with:
-           slither-version: '0.8.1'
-           run-npm-install: true
-           high-threshold: 1
-           medium-threshold: 1
-           low-threshold: 1
-           informative-threshold: 10
-           slither-params: --filter-paths "contracts"
 
+  run-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Cache Solidity Installations
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.solcx
+          ~/.vvm
+        key: ${{ runner.os }}-compiler-cache
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+
+    - name: Install Ganache
+      run: npm install -g ganache-cli@6.12.2
+
+    - name: Setup Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install brownie
+      run:
+        - python3 -m pip install --user pipx
+        - python3 -m pipx ensurepath
+        - pipx install eth-brownie
+        
+    - name: run tests
+      run: brownie test

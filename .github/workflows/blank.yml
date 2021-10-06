@@ -17,6 +17,8 @@ jobs:
           ~/.solcx
           ~/.vvm
           ~/.local
+          /opt/pipx
+          /opt/pipx-bin
         key: ${{ runner.os }}-compiler-cache
         
 

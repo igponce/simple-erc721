@@ -89,3 +89,20 @@ def test_transfer_with_aproval(token):
     # and there is a transfer event
     assert dict(tx.events).get('Transfer') != None
 
+
+def test_transfer_by_operator(token):
+
+    alice, bob = [ accounts[x].address for x in range(2) ]
+
+    assert token.ownerOf(1) == alice #'0x0000000000000000000000000000000000000000'
+
+    # alice makes bob an operator for all
+    tx = token.setAprovalForAll(bob, True, {'from': alice})
+
+    # and there is an ApprovalForAll message
+    assert dict(tx.events).get('ApprovalForAll') != None
+    
+    # bob can transfer more than one token grom alice
+    for tokenid in range(1,3):
+       tx = token.transferFrom(alice, bob, tokenid, {'from': bob})
+       assert tx.events != None

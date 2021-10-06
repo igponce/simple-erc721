@@ -74,6 +74,10 @@ contract SimpleERC721 {
         return _tokencount[_owner];
     }
 
+    function ownerOf(uint256 _tokenId) external view returns (address) {
+        return _tokenowner[_tokenId];
+    }
+
     function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external payable {
         require(msg.sender == _tokenowner[_tokenid]);
     }
@@ -83,7 +87,7 @@ contract SimpleERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
-        require(msg.sender == _from || _autorized[_tokenid] == msg.sender);
+        require(msg.sender == _from || _autorized[_tokenid] == msg.sender || _authorizedoperator[_from] == msg.sender );
         require(_tokenowner[_tokenid] == _from);
         require(_to != address(0));
         

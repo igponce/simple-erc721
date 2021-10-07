@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Cache solidity and pipx Installations
+      id: cache_solidity_pipx
       uses: actions/cache@v2
       with:
         path: |
@@ -26,7 +27,7 @@ jobs:
       uses: actions/setup-node@v1
 
     - name: Install Ganache
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.cache_solidity_pipx.outputs.cache-hit != 'true'
       run: npm install -g ganache-cli@6.12.2
 
     - name: Setup Python 3.8
@@ -35,7 +36,7 @@ jobs:
         python-version: 3.8
 
     - name: Install brownie
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.cache_solidity_pipx.outputs.cache-hit != 'true'
       run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install eth-brownie
         
     - name: run tests

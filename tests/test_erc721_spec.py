@@ -106,3 +106,26 @@ def test_transfer_by_operator(token):
     for tokenid in range(1,3):
        tx = token.transferFrom(alice, bob, tokenid, {'from': bob})
        assert tx.events != None
+
+############### Unimplemented stuff ###################
+
+def test_safeTransferFrom(toke):
+    assert False
+    
+def test_aprove(token):
+    assert False
+    
+def test_ownerOf(token):
+    assert False
+    
+def test_setApprovalForAll(token):
+    assert False
+    
+def test_unsetApprovalForAll(token):
+    assert False
+    
+def test_clearApprovalsAfterTransfer(token):
+    assert False
+    
+def test_supportsInterface(token):
+    assert False

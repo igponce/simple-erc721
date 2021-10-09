@@ -15,6 +15,10 @@ def token():
     erc721 = accounts[0].deploy(SimpleERC721)
     return erc721
 
+@pytest.fixture
+def invalid_tokenid():
+    import random
+    return 100_000_000 + int(random.uniform(1,100_000_000))
 
 def test_constructor():
     """
@@ -107,14 +111,25 @@ def test_transfer_by_operator(token):
        tx = token.transferFrom(alice, bob, tokenid, {'from': bob})
        assert tx.events != None
 
+def test_approve(token, invalid_tokenid):
+    valid_tokenid = 1
+    alice, bob = [x.address for x in accounts[0:2]]
+    with reverts():
+       # Fails with an invalid token
+       tx = token.approve(bob, invalid_tokenid)
+    
+    tx = token.approve(bob, valid_tokenid)
+    assert tx.events['Approval'] == {
+        '_owner': alice,
+        '_approved': bob,
+        '_tokenid': valid_tokenid
+    }
+
 ############### Unimplemented stuff ###################
 
-def test_safeTransferFrom(toke):
+def test_safeTransferFrom(token):
     assert False
-    
-def test_aprove(token):
-    assert False
-    
+
 def test_ownerOf(token):
     assert False
     

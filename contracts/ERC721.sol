@@ -50,6 +50,7 @@ contract SimpleERC721 {
 
     constructor() {
         // mints two NFT with owner by the contract deployer
+        // this must go elsewhere
         _mint(1, msg.sender, false);
         _mint(2, msg.sender, false);
     }
@@ -102,9 +103,10 @@ contract SimpleERC721 {
         emit Transfer(_from, _to, _tokenid);
     }
 
-    function approve(address _approves, uint256 _tokenid) external payable {
+    function approve(address _approved, uint256 _tokenid) external payable {
         require(msg.sender == _tokenowner[_tokenid]);
-        _autorized[_tokenid] = _approves;
+        _autorized[_tokenid] = _approved;
+        emit Approval(_tokenowner[_tokenid], _approved, _tokenid);
     }
 
     function setAprovalForAll(address _operator, bool _approved) external payable {

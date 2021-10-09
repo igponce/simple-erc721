@@ -7,6 +7,8 @@ import logging
 import web3
 from brownie import accounts, SimpleERC721 , exceptions, reverts
 
+Zeroaddress = '0x0000000000000000000000000000000000000000'
+
 @pytest.fixture
 def token():
     """
@@ -53,7 +55,7 @@ def test_simple_transfers(token):
     # Transfer to the zero address verboten
     with reverts():
        token.transferFrom(receiver, 
-            '0x0000000000000000000000000000000000000000',
+            Zeroaddress,
             tokenid, {'from': receiver})
 
     
@@ -85,7 +87,7 @@ def test_transfer_with_aproval(token):
 
     # after a transfer aprovales are cleared
     assert token.getApproved(tokenid) != bob
-    assert token.getApproved(tokenid) == '0x0000000000000000000000000000000000000000'
+    assert token.getApproved(tokenid) == Zeroaddress
 
     # new owner can transfer without auth
     tx = token.transferFrom(bob, alice, tokenid, {'from': bob})
@@ -98,7 +100,7 @@ def test_transfer_by_operator(token):
 
     alice, bob = [ accounts[x].address for x in range(2) ]
 
-    assert token.ownerOf(1) == alice #'0x0000000000000000000000000000000000000000'
+    assert token.ownerOf(1) == alice
 
     # alice makes bob an operator for all
     tx = token.setAprovalForAll(bob, True, {'from': alice})
@@ -125,13 +127,28 @@ def test_approve(token, invalid_tokenid):
         '_tokenid': valid_tokenid
     }
 
+def test_ownerOf(token):
+    # At start accounts[0] owns all tokens
+    tokenid = 1
+    owner = accounts[0].address
+    others = [x.address for x in accounts[1:]]
+
+    assert token.ownerOf(tokenid) == owner
+    assert token.ownerOf(tokenid) not in others
+
+
+def test_balanceOf(token):
+    # At start accounts[0] owns all tokens
+
+    alice = accounts[0].address
+    assert token.balanceOf(alice) == 123
+    assert token.balanceOf(Zeroaddress) == 123
+
 ############### Unimplemented stuff ###################
 
 def test_safeTransferFrom(token):
     assert False
 
-def test_ownerOf(token):
-    assert False
     
 def test_setApprovalForAll(token):
     assert False

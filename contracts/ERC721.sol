@@ -38,7 +38,7 @@ contract SimpleERC721 {
     // Like ERC20 authorizations.
     // Operator address authorized to work with NFTs from this wallet.
     // _authorizedop[wallet] = operator
-    mapping(address => address) private _authorizedoperator;
+    mapping(address => mapping(address => bool)) private _authorizedoperator;
 
     // Events
 
@@ -88,7 +88,7 @@ contract SimpleERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
-        require(msg.sender == _from || _autorized[_tokenid] == msg.sender || _authorizedoperator[_from] == msg.sender );
+        require(msg.sender == _from || _autorized[_tokenid] == msg.sender || _authorizedoperator[_from][msg.sender] == true );
         require(_tokenowner[_tokenid] == _from);
         require(_to != address(0));
         
@@ -109,13 +109,14 @@ contract SimpleERC721 {
         emit Approval(_tokenowner[_tokenid], _approved, _tokenid);
     }
 
-    function setAprovalForAll(address _operator, bool _approved) external payable {
+    function setApprovalForAll(address _operator, bool _approved) external payable returns (bool)  {
         if (_approved) {
-           _authorizedoperator[msg.sender] = _operator;
+           _authorizedoperator[msg.sender][_operator] = _approved;
         } else {
-           _authorizedoperator[msg.sender] = address(0);
+            delete(_authorizedoperator[msg.sender][_operator]);
         }
         emit ApprovalForAll(msg.sender, _operator, _approved);
+        return _approved;
     }
 
     function getApproved(uint256 _tokenid) external view returns (address) {
@@ -123,7 +124,7 @@ contract SimpleERC721 {
     }
 
     function isApprovedForAll(address _owner, address _operator) external view returns (bool) {
-           return _authorizedoperator[_owner] == _operator;
+        return _authorizedoperator[_owner][_operator];
     }
 
     // clear all aprovals etc after transfer

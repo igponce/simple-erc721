@@ -103,7 +103,7 @@ def test_transfer_by_operator(token):
     assert token.ownerOf(1) == alice
 
     # alice makes bob an operator for all
-    tx = token.setAprovalForAll(bob, True, {'from': alice})
+    tx = token.setApprovalForAll(bob, True, {'from': alice})
 
     # and there is an ApprovalForAll message
     assert dict(tx.events).get('ApprovalForAll') != None
@@ -138,22 +138,50 @@ def test_ownerOf(token):
 
 
 def test_balanceOf(token):
+    """
+    ERC721 balanceOf(address) returns the number of tokens
+    owned by this address. Reverts if address is the zero address.
+    """
     # At start accounts[0] owns all tokens
-
     alice = accounts[0].address
-    assert token.balanceOf(alice) == 123
-    assert token.balanceOf(Zeroaddress) == 123
+    assert token.balanceOf(alice) > 0
+    with reverts():
+       tx = token.balanceOf(Zeroaddress)
+    
+def test_setApprovalForAll(token):
+    """
+    Enable or disable approval for a third party ("operator") to manage
+    all of `msg.sender`'s assets.
+    - Emits the ApprovalForAll event.
+    - The contract MUST allow multiple operators per owner
+    """
+
+    # Test scenarios enable, then disable approvalForAll
+    # for two operators.
+
+    alice, bob, charlie = [x.address for x in accounts[0:3]]
+    tokenid = 1
+
+    # Does not revert with the zero address... but should not send any event.
+    tx = token.setApprovalForAll(Zeroaddress, True)
+    assert tx.events['ApprovalForAll'] == None
+
+    # Set several operators
+    token.setApprovalForAll(bob, True)
+    token.setApprovalForAll(charlie, True)
+
+    token.transferFrom(alice,charlie, tokenid, {'from': bob})
+    token.transferFrom(alice,charlie, tokenid +1 , {'from': charlie})
+
+    # Set several operators
+    token.setApprovalForAll(bob, False)
+
+    assert token.ownerOf(1) == charlie
+
 
 ############### Unimplemented stuff ###################
 
 def test_safeTransferFrom(token):
-    assert False
-
-    
-def test_setApprovalForAll(token):
-    assert False
-    
-def test_unsetApprovalForAll(token):
     assert False
     
 def test_clearApprovalsAfterTransfer(token):

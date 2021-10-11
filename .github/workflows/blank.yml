@@ -37,7 +37,7 @@ jobs:
 
     - name: Install brownie
       if: steps.cache_solidity_pipx.outputs.cache-hit != 'true'
-      run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install eth-brownie
+      run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install --force eth-brownie
         
     - name: run tests
       run: brownie test

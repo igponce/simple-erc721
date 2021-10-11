@@ -16,6 +16,35 @@ pragma solidity >=0.8.4 ;
 //    Notifiesthe recipient that it received a specific token.
 // event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
 
+/// @dev Note: the ERC-165 identifier for this interface is 0x150b7a02.
+interface ERC721TokenReceiver {
+    /// @notice Handle the receipt of an NFT
+    /// @dev The ERC721 smart contract calls this function on the recipient
+    ///  after a `transfer`. This function MAY throw to revert and reject the
+    ///  transfer. Return of other than the magic value MUST result in the
+    ///  transaction being reverted.
+    ///  Note: the contract address is always the message sender.
+    /// @param _operator The address which called `safeTransferFrom` function
+    /// @param _from The address which previously owned the token
+    /// @param _tokenId The NFT identifier which is being transferred
+    /// @param _data Additional data with no specified format
+    /// @return `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
+    ///  unless throwing
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);
+}
+
+
+/*** From OpenZeppelin ***/
+function isContract(address account) internal view returns (bool) {
+   // This method relies on extcodesize, which returns 0 for contracts in
+   // construction, since the code is only stored at the end of the
+   // constructor execution.
+   uint256 size;
+     assembly {
+        size := extcodesize(account)
+     }
+   return size > 0;
+}
 
 contract SimpleERC721 {
 
@@ -78,28 +107,37 @@ contract SimpleERC721 {
     function ownerOf(uint256 _tokenId) external view returns (address) {
         return _tokenowner[_tokenId];
     }
-
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external payable {
-        require(msg.sender == _tokenowner[_tokenid]);
-    }
-
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external payable {
-        require(msg.sender == _tokenowner[_tokenid]);
-    }
-
-    function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
+    
+    function _doTransferFrom(address _from, address _to, uint256 _tokenid) private {
         require(msg.sender == _from || _autorized[_tokenid] == msg.sender || _authorizedoperator[_from][msg.sender] == true );
         require(_tokenowner[_tokenid] == _from);
         require(_to != address(0));
         
         // Clear authorization first
         _autorized[_tokenid] = address(0);
-        // delete _authorizedoperator[_tokenid];
+        delete _authorizedoperator[_tokenid];
 
         _tokencount[_from] -= 1;
         _tokencount[_to] += 1;
         _tokenowner[_tokenid] = _to;
+   }
 
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external payable {
+        _doTransferFrom(_from,_to,_tokenid);
+        // if _to_address is a contract, call 
+        
+        if(isContract(_to) {
+           // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
+           require( ERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenid, _data) == 0x150b7a02 )
+        }
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external payable {
+        safeTransferFrom(_from,_to,_tokenid,"");
+    }
+
+    function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
+        _doTransferFrom(_from,_to,_tokeind);
         emit Transfer(_from, _to, _tokenid);
     }
 

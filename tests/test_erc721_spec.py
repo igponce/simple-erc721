@@ -164,7 +164,7 @@ def test_setApprovalForAll(token):
 
     # Does not revert with the zero address... but should not send any event.
     tx = token.setApprovalForAll(Zeroaddress, True)
-    assert tx.events['ApprovalForAll'] == None
+    assert dict(tx.events).get('ApprovalForAll') == None
 
     # Set several operators
     token.setApprovalForAll(bob, True)

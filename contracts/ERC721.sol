@@ -30,21 +30,9 @@ interface ERC721TokenReceiver {
     /// @param _data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     ///  unless throwing
-    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4);
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external returns(bytes4);
 }
 
-
-/*** From OpenZeppelin ***/
-function isContract(address account) internal view returns (bool) {
-   // This method relies on extcodesize, which returns 0 for contracts in
-   // construction, since the code is only stored at the end of the
-   // constructor execution.
-   uint256 size;
-     assembly {
-        size := extcodesize(account)
-     }
-   return size > 0;
-}
 
 contract SimpleERC721 {
 
@@ -115,20 +103,20 @@ contract SimpleERC721 {
         
         // Clear authorization first
         _autorized[_tokenid] = address(0);
-        delete _authorizedoperator[_tokenid];
 
         _tokencount[_from] -= 1;
         _tokencount[_to] += 1;
         _tokenowner[_tokenid] = _to;
    }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external payable {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) public virtual {
         _doTransferFrom(_from,_to,_tokenid);
+        
         // if _to_address is a contract, call 
         
-        if(isContract(_to) {
+        if (isContract(_to)) {
            // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
-           require( ERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenid, _data) == 0x150b7a02 )
+           require( ERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenid, _data) == 0x150b7a02 );
         }
     }
 
@@ -137,7 +125,7 @@ contract SimpleERC721 {
     }
 
     function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
-        _doTransferFrom(_from,_to,_tokeind);
+        _doTransferFrom(_from,_to,_tokenid);
         emit Transfer(_from, _to, _tokenid);
     }
 
@@ -173,6 +161,18 @@ contract SimpleERC721 {
     function _clearAuth(uint256 _token) private {
         
     }
+
+/*** From OpenZeppelin ***/
+function isContract(address account) internal view returns (bool) {
+   // This method relies on extcodesize, which returns 0 for contracts in
+   // construction, since the code is only stored at the end of the
+   // constructor execution.
+   uint256 size;
+     assembly {
+        size := extcodesize(account)
+     }
+   return size > 0;
+}
 
     
 }

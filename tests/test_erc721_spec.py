@@ -189,3 +189,7 @@ def test_clearApprovalsAfterTransfer(token):
     
 def test_supportsInterface(token):
     assert False
+
+def test_isContract(token):
+    assert token.isContract(token.address)
+    assert not token.isContract(accounts[0].address)

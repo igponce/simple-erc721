@@ -97,7 +97,9 @@ contract SimpleERC721 {
     }
     
     function _doTransferFrom(address _from, address _to, uint256 _tokenid) private {
-        require(msg.sender == _from || _autorized[_tokenid] == msg.sender || _authorizedoperator[_from][msg.sender] == true );
+        require(msg.sender == _from || 
+                _autorized[_tokenid] == msg.sender ||
+                 _authorizedoperator[_from][msg.sender] == true );
         require(_tokenowner[_tokenid] == _from);
         require(_to != address(0));
         
@@ -163,7 +165,7 @@ contract SimpleERC721 {
     }
 
 /*** From OpenZeppelin ***/
-function isContract(address account) internal view returns (bool) {
+function isContract(address account) public view returns (bool) {
    // This method relies on extcodesize, which returns 0 for contracts in
    // construction, since the code is only stored at the end of the
    // constructor execution.

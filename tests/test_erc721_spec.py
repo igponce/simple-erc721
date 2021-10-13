@@ -179,12 +179,48 @@ def test_setApprovalForAll(token):
     assert token.ownerOf(1) == charlie
 
 
-############### Unimplemented stuff ###################
-
-def test_safeTransferFrom(token):
-    assert False
-    
 def test_clearApprovalsAfterTransfer(token):
+
+   alice, bob, charlie, operator = [accounts[x].address for x in range(4)]
+   tokenid = 1
+
+   # Transferring a token will clear approval for this token
+   # Transfer from an operator, clears approval
+   token.approve(operator, tokenid)
+   assert token.getApproved(tokenid) == operator
+   token.transferFrom(alice,bob,tokenid, {'from': operator})
+   assert token.getApproved(tokenid) == Zeroaddress
+
+   # Transfer directly crears approval
+   token.approve(operator, tokenid, {'from': bob})
+   token.transferFrom(bob,alice, tokenid, {'from': bob})
+   assert token.getApproved(tokenid) == Zeroaddress
+   
+   # Transfer does not changhe setApprovalForAll
+
+   # Transferring with allowForAll also changes aproval
+   # Alice appoves bob for a token, but transfers using an operator.
+   # aproval for the token is cleared, but the operator can still
+   # transfer tokens from alice account
+   token.approve(bob, tokenid)
+   token.setApprovalForAll(operator, True, {'from': alice})
+   token.transferFrom(alice, charlie, tokenid)
+
+   assert token.getApproved(tokenid, {'from': alice}) != bob
+   assert token.isApprovedForAll(alice,bob) == False
+
+   token.transferFrom(charlie, alice, tokenid, {'from': charlie}) # return the token to alice
+
+   # Transfer with safeTransferFrom changes aproval for the token
+   # but not for the operator
+   token.approve(bob, tokenid)
+   token.setApprovalForAll(operator, True, {'from': alice})
+   token.safeTransferFrom(alice, charlie, tokenid, {'from': bob})
+   assert token.getApproved(tokenid) == Zeroaddress
+
+    
+############### Unimplemented stuff ###################
+def test_safeTransferFrom(token):
     assert False
     
 def test_supportsInterface(token):

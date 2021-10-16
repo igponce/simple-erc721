@@ -40,4 +40,4 @@ jobs:
       run: python3 -m pip install --user pipx && python3 -m pipx ensurepath && pipx install --force eth-brownie
         
     - name: run tests
-      run: brownie test
+      run: brownie --gas --coverage test

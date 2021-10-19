@@ -9,17 +9,17 @@ pragma solidity >=0.8.4 ;
 
 contract testERC721Receiver {
 
-   bool private receiveFails;
+   bool private answer;
 
-   constructor (bool _receiveFails) {
-       receiveFails = _receiveFails;
+   constructor (bool _answer) {
+       answer = _answer;
    }
 
    function onERC721Received(address, address, uint256, bytes calldata) external view returns(bytes4) {
-       if (receiveFails) {
-           return 0;
-       } else {
+       if (answer == true) {
            return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+       } else {
+           return 0;
        }
    }
 

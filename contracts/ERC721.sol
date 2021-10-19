@@ -113,14 +113,41 @@ contract SimpleERC721 {
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) public virtual {
         _doTransferFrom(_from,_to,_tokenid);
+
+        bytes4 return_value = 0x00000000;
         
         // if _to_address is a contract, call 
         
         if (isContract(_to)) {
            // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
-           require( ERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenid, _data) == 0x150b7a02 );
+
+           try ERC721TokenReceiver(_to).onERC721Received(
+                 msg.sender, 
+                 _from,
+                 _tokenid,
+                 _data) returns (bytes4 retval){
+
+               return_value = retval;
+           } catch (bytes memory error) {
+               if (error.length == 0) {
+                   // unimplemented by called contract
+                   revert("Receiver does not support ERC721Receiver interface");
+               } else {
+                   revert(string(abi.encode("onERC721Receiver raised error",error)));
+               }
+           }
+
+           emit Debug("RETURN VALUE", return_value);
+
+           require(return_value == 0x150b7a02, "Transfer not accepted");
+
+           if (return_value != 0x150b7a02) {
+              revert("Transfer not accepted");
+           }
         }
     }
+
+    event Debug(string, bytes4);
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenid) external payable {
         safeTransferFrom(_from,_to,_tokenid,"");
@@ -164,17 +191,17 @@ contract SimpleERC721 {
         
     }
 
-/*** From OpenZeppelin ***/
-function isContract(address account) public view returns (bool) {
-   // This method relies on extcodesize, which returns 0 for contracts in
-   // construction, since the code is only stored at the end of the
-   // constructor execution.
-   uint256 size;
-     assembly {
-        size := extcodesize(account)
-     }
-   return size > 0;
-}
+    /*** From OpenZeppelin ***/
+    function isContract(address account) public view returns (bool) {
+    // This method relies on extcodesize, which returns 0 for contracts in
+    // construction, since the code is only stored at the end of the
+    // constructor execution.
+    uint256 size;
+        assembly {
+            size := extcodesize(account)
+        }
+    return size > 0;
+    }
 
     
 }

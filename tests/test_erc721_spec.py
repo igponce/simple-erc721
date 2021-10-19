@@ -5,7 +5,7 @@
 import pytest
 import logging
 import web3
-from brownie import accounts, SimpleERC721 , exceptions, reverts
+from brownie import accounts, SimpleERC721 , testERC721Receiver, exceptions, reverts, ZERO_ADDRESS
 
 Zeroaddress = '0x0000000000000000000000000000000000000000'
 
@@ -55,7 +55,7 @@ def test_simple_transfers(token):
     # Transfer to the zero address verboten
     with reverts():
        token.transferFrom(receiver, 
-            Zeroaddress,
+            ZERO_ADDRESS,
             tokenid, {'from': receiver})
 
     
@@ -87,7 +87,7 @@ def test_transfer_with_aproval(token):
 
     # after a transfer aprovales are cleared
     assert token.getApproved(tokenid) != bob
-    assert token.getApproved(tokenid) == Zeroaddress
+    assert token.getApproved(tokenid) == ZERO_ADDRESS
 
     # new owner can transfer without auth
     tx = token.transferFrom(bob, alice, tokenid, {'from': bob})
@@ -146,7 +146,7 @@ def test_balanceOf(token):
     alice = accounts[0].address
     assert token.balanceOf(alice) > 0
     with reverts():
-       tx = token.balanceOf(Zeroaddress)
+       tx = token.balanceOf(ZERO_ADDRESS)
     
 def test_setApprovalForAll(token):
     """
@@ -163,7 +163,7 @@ def test_setApprovalForAll(token):
     tokenid = 1
 
     # Does not revert with the zero address... but should not send any event.
-    tx = token.setApprovalForAll(Zeroaddress, True)
+    tx = token.setApprovalForAll(ZERO_ADDRESS, True)
     assert dict(tx.events).get('ApprovalForAll') == None
 
     # Set several operators
@@ -189,12 +189,12 @@ def test_clearApprovalsAfterTransfer(token):
    token.approve(operator, tokenid)
    assert token.getApproved(tokenid) == operator
    token.transferFrom(alice,bob,tokenid, {'from': operator})
-   assert token.getApproved(tokenid) == Zeroaddress
+   assert token.getApproved(tokenid) == ZERO_ADDRESS
 
    # Transfer directly crears approval
    token.approve(operator, tokenid, {'from': bob})
    token.transferFrom(bob,alice, tokenid, {'from': bob})
-   assert token.getApproved(tokenid) == Zeroaddress
+   assert token.getApproved(tokenid) == ZERO_ADDRESS
    
    # Transfer does not changhe setApprovalForAll
 
@@ -216,12 +216,40 @@ def test_clearApprovalsAfterTransfer(token):
    token.approve(bob, tokenid)
    token.setApprovalForAll(operator, True, {'from': alice})
    token.safeTransferFrom(alice, charlie, tokenid, {'from': bob})
-   assert token.getApproved(tokenid) == Zeroaddress
+   assert token.getApproved(tokenid) == ZERO_ADDRESS
 
     
-############### Unimplemented stuff ###################
 def test_safeTransferFrom(token):
-    assert False
+
+    alice, bob = [ x.address for x in accounts[0:2]]
+
+    alwaysOK = accounts[0].deploy(testERC721Receiver, True)
+    alwaysKO = accounts[0].deploy(testERC721Receiver, False)
+
+    # Setup authorized operators for all
+
+    for operator in [token, alice, bob]:
+       token.setApprovalForAll(operator, True, {'from': alice})
+
+    # Contract that does not implement receiver interface
+    # must revert **cleanly**, not a VM Error
+
+    try:
+       token.safeTransferFrom(alice, token, 1)
+
+    except exceptions.VirtualMachineError as ee:
+       print(ee)
+       assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
+       pass;
+
+    # Contract that does not accept the transfer
+    with reverts():
+       tx = token.safeTransferFrom(alice, alwaysKO, 1)
+       print(tx.info())
+
+
+
+############### Unimplemented stuff ###################
     
 def test_supportsInterface(token):
     assert False

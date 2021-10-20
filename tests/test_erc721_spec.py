@@ -85,7 +85,7 @@ def test_transfer_with_aproval(token):
     # bob can transfer the token if he's authorized
     token.transferFrom(alice, bob, tokenid, {'from': bob})
 
-    # after a transfer aprovales are cleared
+    # after a transfer aprovals are cleared
     assert token.getApproved(tokenid) != bob
     assert token.getApproved(tokenid) == ZERO_ADDRESS
 
@@ -112,6 +112,8 @@ def test_transfer_by_operator(token):
     for tokenid in range(1,3):
        tx = token.transferFrom(alice, bob, tokenid, {'from': bob})
        assert tx.events != None
+       # after transfer aprovals are cleaed
+       assert token.getApproved(tokenid) == ZERO_ADDRESS
 
 def test_approve(token, invalid_tokenid):
     valid_tokenid = 1

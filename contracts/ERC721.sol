@@ -39,7 +39,9 @@ contract SimpleERC721 {
     mapping(address => uint256) private _tokencount;
 
     // Authorizations for tokens (1 address for each token)
-    // _authorized[token] = address authorized to manipulate this token   
+    // _authorized[token] = address authorized to manipulate this token 
+    // ** there is no "unapprove()" method, tokens can have just
+    // one approved address.
     mapping(uint256 => address) private _autorized;   
 
     // Like ERC20 authorizations.
@@ -94,7 +96,7 @@ contract SimpleERC721 {
         require(_to != address(0));
         
         // Clear authorization first
-        _autorized[_tokenid] = address(0);
+        _clearAuth(_tokenid);
 
         _tokencount[_from] -= 1;
         _tokencount[_to] += 1;
@@ -102,13 +104,18 @@ contract SimpleERC721 {
    }
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) public virtual {
+
+        // First transfer the token
+        // then check onERC721Receiver,
+        // and finally revert() OR emit Transfer event
         _doTransferFrom(_from,_to,_tokenid);
 
         bytes4 return_value = 0x00000000;
         
-        // if _to_address is a contract, call 
+        // if _to_address is a contract, try to call onERC721Received()
         
         if (isContract(_to)) {
+            
            // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
 
            try ERC721TokenReceiver(_to).onERC721Received(
@@ -127,8 +134,6 @@ contract SimpleERC721 {
                }
            }
 
-           emit Debug("RETURN VALUE", return_value);
-
            require(return_value == 0x150b7a02, "Transfer not accepted");
 
            if (return_value != 0x150b7a02) {
@@ -136,8 +141,6 @@ contract SimpleERC721 {
            }
         }
     }
-
-    event Debug(string, bytes4);
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenid) external payable {
         safeTransferFrom(_from,_to,_tokenid,"");
@@ -177,22 +180,19 @@ contract SimpleERC721 {
     }
 
     // clear all aprovals etc after transfer
-    function _clearAuth(uint256 _token) private {
-        // ToDo //
-        
+    function _clearAuth(uint256 _tokenid) private {
+        _autorized[_tokenid] = address(0);
     }
 
     // ERC165 supportsInterface
     // Returns true if the contract supports the inteface.
     // Returns false it does not support it *or* interfaceID is 0xffffffff
     function supportsInterface(bytes4 interfaceId) external view returns (bool) {
-
         if ((interfaceId == 0x01ffc9a7) // supportsInterface
             || (interfaceId == 0x80ac58cd) // erc721 - 'vanilla interface'
         ) {
             return true;
         }
-
         return false;
     }
 

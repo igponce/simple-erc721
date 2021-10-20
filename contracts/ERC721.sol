@@ -6,16 +6,6 @@
 
 pragma solidity >=0.8.4 ;
 
-// Stuff we need to implement
-//
-// Methods
-//
-// Events
-//
-// event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
-//    Notifiesthe recipient that it received a specific token.
-// event Transfer(address indexed _from, address indexed _to, uint256 indexed _tokenId);
-
 /// @dev Note: the ERC-165 identifier for this interface is 0x150b7a02.
 interface ERC721TokenReceiver {
     /// @notice Handle the receipt of an NFT
@@ -63,7 +53,7 @@ contract SimpleERC721 {
     event Approval(address indexed _owner, address indexed _approved, uint256 indexed _tokenid);
     event ApprovalForAll(address indexed _owner, address indexed _operator, bool _approved);
 
-    // event Debug(address _addr, uint256 _value, string _str);   
+    // event Debug(address _addr, uint256 _value, string _str);
 
     constructor() {
         // mints two NFT with owner by the contract deployer
@@ -188,7 +178,22 @@ contract SimpleERC721 {
 
     // clear all aprovals etc after transfer
     function _clearAuth(uint256 _token) private {
+        // ToDo //
         
+    }
+
+    // ERC165 supportsInterface
+    // Returns true if the contract supports the inteface.
+    // Returns false it does not support it *or* interfaceID is 0xffffffff
+    function supportsInterface(bytes4 interfaceId) external view returns (bool) {
+
+        if ((interfaceId == 0x01ffc9a7) // supportsInterface
+            || (interfaceId == 0x80ac58cd) // erc721 - 'vanilla interface'
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /*** From OpenZeppelin ***/
@@ -202,6 +207,5 @@ contract SimpleERC721 {
         }
     return size > 0;
     }
-
     
 }

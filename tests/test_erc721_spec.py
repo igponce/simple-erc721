@@ -252,7 +252,18 @@ def test_safeTransferFrom(token):
 ############### Unimplemented stuff ###################
     
 def test_supportsInterface(token):
-    assert False
+
+    testcases = [ 
+        # interfaceId, return_value, interface_name
+        ["0x00000000", False, "unimplemented interface"],
+        ["0x01ffc9a7", True, "erc165 - supportsInterace"],
+        ["0x80ac58cd", True, "erc721 interface"],
+        ["0xffffffff", False, "erc165 - must return false"]
+    ]
+
+    for interface, expected, name in testcases:
+        assert token.supportsInterface(interface) == expected, name
+
 
 def test_isContract(token):
     assert token.isContract(token.address)

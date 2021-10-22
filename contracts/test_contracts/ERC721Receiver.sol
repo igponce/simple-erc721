@@ -24,3 +24,11 @@ contract testERC721Receiver {
    }
 
 }
+
+contract revertsERC721Receiver {
+   error AlwaysReverts(string);
+   function onERC721Received(address, address, uint256, bytes calldata) external view returns(bytes4) {
+       revert ("Called contract always reverts");
+   }
+
+}

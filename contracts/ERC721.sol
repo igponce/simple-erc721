@@ -110,35 +110,39 @@ contract SimpleERC721 {
         // and finally revert() OR emit Transfer event
         _doTransferFrom(_from,_to,_tokenid);
 
-        bytes4 return_value = 0x00000000;
+        bytes4 return_value;
         
         // if _to_address is a contract, try to call onERC721Received()
         
         if (isContract(_to)) {
-            
-           // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
 
            try ERC721TokenReceiver(_to).onERC721Received(
-                 msg.sender, 
-                 _from,
-                 _tokenid,
-                 _data) returns (bytes4 retval){
-
+                msg.sender, 
+                _from,
+                _tokenid,
+                _data) returns (bytes4 retval)
+           {
                return_value = retval;
-           } catch (bytes memory error) {
+
+           } catch /*(bytes memory error) */ {
+               /* revert("Va a ser que no");
+
+               
+
                if (error.length == 0) {
                    // unimplemented by called contract
-                   revert("Receiver does not support ERC721Receiver interface");
-               } else {
-                   revert(string(abi.encode("onERC721Receiver raised error",error)));
+               
+            */    revert("Receiver does not support ERC721Receiver interface");
+              /* } else {
+                   // reverted by called contract
+                   revert("Contract reverted after calling onERC721Receiver");
                }
+               */
            }
 
+           // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
            require(return_value == 0x150b7a02, "Transfer not accepted");
 
-           if (return_value != 0x150b7a02) {
-              revert("Transfer not accepted");
-           }
         }
     }
 

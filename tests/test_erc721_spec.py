@@ -5,7 +5,7 @@
 import pytest
 import logging
 import web3
-from brownie import accounts, SimpleERC721 , testERC721Receiver, exceptions, reverts, ZERO_ADDRESS
+from brownie import accounts, SimpleERC721 , testERC721Receiver, revertsERC721Receiver, exceptions, reverts, ZERO_ADDRESS
 
 Zeroaddress = '0x0000000000000000000000000000000000000000'
 
@@ -222,36 +222,48 @@ def test_clearApprovalsAfterTransfer(token):
 
     
 def test_safeTransferFrom(token):
+    """
+    Tests for safeTransferFrom
+    We use dummy contracts that always accept, reject, or revert
+    the transaction to check the contract return values.
+    """
 
     alice, bob = [ x.address for x in accounts[0:2]]
 
     alwaysOK = accounts[0].deploy(testERC721Receiver, True)
     alwaysKO = accounts[0].deploy(testERC721Receiver, False)
+    alwaysReverts = accounts[0].deploy(revertsERC721Receiver)
 
     # Setup authorized operators for all
 
     for operator in [token, alice, bob]:
        token.setApprovalForAll(operator, True, {'from': alice})
 
+    import pdb; pdb.set_trace()
+
     # Contract that does not implement receiver interface
     # must revert **cleanly**, not a VM Error
-
     try:
-       token.safeTransferFrom(alice, token, 1)
+       tx = token.safeTransferFrom(alice, token, 1)
 
     except exceptions.VirtualMachineError as ee:
        print(ee)
        assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
        pass;
 
-    # Contract that does not accept the transfer
     with reverts():
+       # Contract that does not accept the transfer
        tx = token.safeTransferFrom(alice, alwaysKO, 1)
-       print(tx.info())
 
+       # Contract that always reverts when called
+       tx = token.safeTransferFrom(alice, alwaysReverts, 1)
 
+    # Now send it with some data attached
+    with reverts():
+       tx = token.safeTransferFrom(alice, alwaysReverts, 1, b"hello")
 
-############### Unimplemented stuff ###################
+    # Finally, send the token to a simple address
+    tx = token.safeTransferFrom(alice, bob, 1, b"Transfer to a wallet, not a contract")
     
 def test_supportsInterface(token):
 

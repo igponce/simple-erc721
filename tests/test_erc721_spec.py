@@ -239,8 +239,6 @@ def test_safeTransferFrom(token):
     for operator in [token, alice, bob]:
        token.setApprovalForAll(operator, True, {'from': alice})
 
-    import pdb; pdb.set_trace()
-
     # Contract that does not implement receiver interface
     # must revert **cleanly**, not a VM Error
     try:

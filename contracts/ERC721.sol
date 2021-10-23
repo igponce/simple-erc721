@@ -145,17 +145,14 @@ contract SimpleERC721 {
         emit Approval(_tokenowner[_tokenid], _approved, _tokenid);
     }
 
-    function setApprovalForAll(address _operator, bool _approved) external payable returns (bool)  {
-        if (_operator == address(0)) {
-           return false; // Does not reject but does not touch the blockchain, nor emit a approval.
-        } else {
+    function setApprovalForAll(address _operator, bool _approved) external payable  {
+        if (_operator != address(0)) {
             if (_approved) {
                _authorizedoperator[msg.sender][_operator] = _approved; // true
             } else {
                 delete(_authorizedoperator[msg.sender][_operator]); // should be cheaper that setting to false?
             }
             emit ApprovalForAll(msg.sender, _operator, _approved);
-            return _approved;
         }
     }
 

@@ -17,9 +17,9 @@ def test_dumyERC721Receiver():
     receiver = accounts[0].deploy(testERC721Receiver, False)
     tx = receiver.onERC721Received(alice, bob, 123, b"ig.no.red")
     
-    assert tx == web3.types.HexStr("0x00000000")
+    assert tx.return_value == web3.types.HexStr("0x00000000")
 
     # This contract always succeeds
     receiver2 = accounts[0].deploy(testERC721Receiver, True)
     tx = receiver2.onERC721Received(alice, bob, 123, b"ig.no.red")
-    assert tx == web3.types.HexStr("0x150b7a02")
+    assert tx.return_value == web3.types.HexStr("0x150b7a02")

@@ -228,6 +228,8 @@ def test_safeTransferFrom(token):
     the transaction to check the contract return values.
     """
 
+    import pdb; pdb.set_trace();
+
     alice, bob = [ x.address for x in accounts[0:2]]
 
     alwaysOK = accounts[0].deploy(testERC721Receiver, True)
@@ -241,13 +243,13 @@ def test_safeTransferFrom(token):
 
     # Contract that does not implement receiver interface
     # must revert **cleanly**, not a VM Error
-    try:
-       tx = token.safeTransferFrom(alice, token, 1)
+    #try:
+    tx = token.safeTransferFrom(alice, token, 1,"")
 
-    except exceptions.VirtualMachineError as ee:
-       print(ee)
-       assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
-       pass;
+    #except exceptions.VirtualMachineError as ee:
+    #   print(ee)
+    #   assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
+    #   pass;
 
     with reverts():
        # Contract that does not accept the transfer

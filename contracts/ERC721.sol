@@ -4,7 +4,7 @@
 // Just the _minimal_ functionality for an Non-fungible-token
 // See https://eips.ethereum.org/EIPS/eip-721 for full spec
 
-pragma solidity >=0.8.4 ;
+pragma solidity ^0.7.6; 
 
 import "../interfaces/IERC721TokenReceiver.sol";
 
@@ -87,26 +87,31 @@ contract SimpleERC721 {
         _tokenowner[_tokenid] = _to;
    }
 
+    event DebugIT(string);
+
     function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) public virtual {
 
         // First transfer the token
         // then check onERC721Receiver,
         // and finally revert() OR emit Transfer event
         _doTransferFrom(_from,_to,_tokenid);
-
-        bytes4 return_value;
         
         // if _to_address is a contract, try to call onERC721Received()
+
+        emit DebugIT("despues_transfer");
         
         if (isContract(_to)) {
 
+           emit DebugIT("Es un contrato");
            try ERC721TokenReceiver(_to).onERC721Received(
                 msg.sender, 
                 _from,
                 _tokenid,
                 _data) returns (bytes4 retval)
            {
-               return_value = retval;
+
+               // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
+               require(retval == 0x150b7a02, "Transfer not accepted");
 
            } catch /*(bytes memory error) */ {
                /* revert("Va a ser que no");
@@ -124,8 +129,7 @@ contract SimpleERC721 {
                */
            }
 
-           // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
-           require(return_value == 0x150b7a02, "Transfer not accepted");
+           emit DebugIT("Salida del try_catch");
 
         }
     }

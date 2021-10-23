@@ -130,22 +130,22 @@ contract SimpleERC721 {
         }
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external payable {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external {
         safeTransferFrom(_from,_to,_tokenid,"");
     }
 
-    function transferFrom(address _from, address _to, uint256 _tokenid) external payable {
+    function transferFrom(address _from, address _to, uint256 _tokenid) external  {
         _doTransferFrom(_from,_to,_tokenid);
         emit Transfer(_from, _to, _tokenid);
     }
 
-    function approve(address _approved, uint256 _tokenid) external payable {
+    function approve(address _approved, uint256 _tokenid) external  {
         require(msg.sender == _tokenowner[_tokenid]);
         _autorized[_tokenid] = _approved;
         emit Approval(_tokenowner[_tokenid], _approved, _tokenid);
     }
 
-    function setApprovalForAll(address _operator, bool _approved) external payable  {
+    function setApprovalForAll(address _operator, bool _approved) external   {
         if (_operator != address(0)) {
             if (_approved) {
                _authorizedoperator[msg.sender][_operator] = _approved; // true

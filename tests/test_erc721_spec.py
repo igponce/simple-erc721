@@ -280,3 +280,9 @@ def test_supportsInterface(token):
 def test_isContract(token):
     assert token.isContract(token.address)
     assert not token.isContract(accounts[0].address)
+
+def test_boomerangTransferReverts(token):
+    "" Transfer from owner to owner MUST fail """
+    alice = accounts[0].address
+    tokenid = 1
+    token.transferFrom(alice, alice, tokenid, {'from': alice})

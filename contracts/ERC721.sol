@@ -78,6 +78,7 @@ contract SimpleERC721 {
                  _authorizedoperator[_from][msg.sender] == true );
         require(_tokenowner[_tokenid] == _from);
         require(_to != address(0));
+        require(_to != _tokenowner[_tokenid]) ; // reverts boomerang send from owner to owner.
         
         // Clear authorization first
         _clearAuth(_tokenid);

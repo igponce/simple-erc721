@@ -285,4 +285,6 @@ def test_boomerangTransferReverts(token):
     """ Transfer from owner to owner MUST fail """
     alice = accounts[0].address
     tokenid = 1
-    token.transferFrom(alice, alice, tokenid, {'from': alice})
+    with reverts():
+        token.transferFrom(alice, alice, tokenid, {'from': alice})
+        

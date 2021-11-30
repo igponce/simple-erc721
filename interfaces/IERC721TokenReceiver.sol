@@ -4,7 +4,7 @@
 // Just the _minimal_ functionality for an Non-fungible-token
 // See https://eips.ethereum.org/EIPS/eip-721 for full spec
 
-pragma solidity ^0.7.6 ;
+pragma solidity >=0.7.6 ;
 
 
 /// @dev Note: the ERC-165 identifier for this interface is 0x150b7a02.

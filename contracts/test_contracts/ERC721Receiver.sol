@@ -21,7 +21,7 @@ contract testERC721Receiver {
            return testERC721Receiver.onERC721Received.selector;
            //return bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
        } else {
-           return 0;
+           return 0xdeadbeef;
        }
    }
 

@@ -4,7 +4,7 @@
 // Just the _minimal_ functionality for an Non-fungible-token
 // See https://eips.ethereum.org/EIPS/eip-721 for full spec
 
-pragma solidity ^0.7.6; 
+pragma solidity >=0.7.6; 
 
 import "../interfaces/IERC721TokenReceiver.sol";
 
@@ -87,9 +87,15 @@ contract SimpleERC721 {
         _tokenowner[_tokenid] = _to;
    }
 
-    event DebugIT(string);
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) external {
+       _safeTransferFrom(_from,_to,_tokenid,_data);
+    }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) public virtual {
+    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external {
+        _safeTransferFrom(_from,_to,_tokenid,"");
+    }
+
+    function _safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) private {
 
         // First transfer the token
         // then check onERC721Receiver,
@@ -98,11 +104,8 @@ contract SimpleERC721 {
         
         // if _to_address is a contract, try to call onERC721Received()
 
-        emit DebugIT("despues_transfer");
-        
         if (isContract(_to)) {
 
-           emit DebugIT("Es un contrato");
            try ERC721TokenReceiver(_to).onERC721Received(
                 msg.sender, 
                 _from,
@@ -110,33 +113,27 @@ contract SimpleERC721 {
                 _data) returns (bytes4 retval)
            {
 
-               // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
-               require(retval == 0x150b7a02, "Transfer not accepted");
+               if (retval != 0x150b7a02) {
+                  // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
+                  revert("Transfer not accepted");
+               }
 
-           } catch /*(bytes memory error) */ {
-               /* revert("Va a ser que no");
-
-               
+           } catch (bytes memory error)  {
 
                if (error.length == 0) {
-                   // unimplemented by called contract
-               
-            */    revert("Receiver does not support ERC721Receiver interface");
-              /* } else {
+                   // unimplemented by called contract 
+                   // throw because the return value is not 0x150b7a02
+                   revert("Receiver does not support ERC721Receiver interface");
+               } else {
                    // reverted by called contract
+                   
                    revert("Contract reverted after calling onERC721Receiver");
                }
-               */
+               
            }
-
-           emit DebugIT("Salida del try_catch");
-
         }
     }
 
-    function safeTransferFrom(address _from, address _to, uint256 _tokenid) external {
-        safeTransferFrom(_from,_to,_tokenid,"");
-    }
 
     function transferFrom(address _from, address _to, uint256 _tokenid) external  {
         _doTransferFrom(_from,_to,_tokenid);

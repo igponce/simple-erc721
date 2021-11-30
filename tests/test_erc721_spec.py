@@ -228,9 +228,7 @@ def test_safeTransferFrom(token):
     the transaction to check the contract return values.
     """
 
-    import pdb; pdb.set_trace();
-
-    alice, bob = [ x.address for x in accounts[0:2]]
+    alice, bob, charlie = [ x.address for x in accounts[0:3]]
 
     alwaysOK = accounts[0].deploy(testERC721Receiver, True)
     alwaysKO = accounts[0].deploy(testERC721Receiver, False)
@@ -241,22 +239,23 @@ def test_safeTransferFrom(token):
     for operator in [token, alice, bob]:
        token.setApprovalForAll(operator, True, {'from': alice})
 
-    # Contract that does not implement receiver interface
-    # must revert **cleanly**, not a VM Error
-    #try:
-    tx = token.safeTransferFrom(alice, token, 1,"")
+    # This is an *opinionated* case:
+    # If we have a contract (code size > 0),
+    # we throw if the return value is not `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))
+    # When the contract does not implement that interface,
+    # we can throw an error and comply with the standard.
 
-    #except exceptions.VirtualMachineError as ee:
-    #   print(ee)
-    #   assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
-    #   pass;
+    with reverts():
+       tx = token.safeTransferFrom(alice, token, 1, {'from': alice} )
+       #assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
+
+    with reverts():
+       # Contract that always reverts when called
+       tx = token.safeTransferFrom(alice, alwaysReverts, 1)
 
     with reverts():
        # Contract that does not accept the transfer
        tx = token.safeTransferFrom(alice, alwaysKO, 1)
-
-       # Contract that always reverts when called
-       tx = token.safeTransferFrom(alice, alwaysReverts, 1)
 
     # Now send it with some data attached
     with reverts():

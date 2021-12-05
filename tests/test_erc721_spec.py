@@ -78,7 +78,7 @@ def test_simple_transfers(token):
 def test_transfer_with_aproval(token):
 
     alice, bob = [ accounts[x].address for x in range(2) ]
-    tokenid = 1
+    tokenid = 5
 
     token.approve(bob, tokenid, {'from': alice})
 
@@ -236,7 +236,7 @@ def test_safeTransferFrom(token):
 
     # Setup authorized operators for all
 
-    for operator in [token, alice, bob]:
+    for operator in [token.address, alice, bob]:
        token.setApprovalForAll(operator, True, {'from': alice})
 
     # This is an *opinionated* case:
@@ -263,6 +263,8 @@ def test_safeTransferFrom(token):
 
     # Finally, send the token to a simple address
     tx = token.safeTransferFrom(alice, bob, 1, b"Transfer to a wallet, not a contract")
+
+    tx = token.safeTransferFrom(alice, alwaysOK, 2)
     
 def test_supportsInterface(token):
 

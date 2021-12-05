@@ -44,8 +44,11 @@ contract SimpleERC721 {
     constructor() {
         // mints two NFT with owner by the contract deployer
         // this must go elsewhere
-        _mint(1, msg.sender, false);
-        _mint(2, msg.sender, false);
+        uint256 c = 0;
+        address owner = msg.sender;
+        for (c=1; c<100; c++) {
+           _mint(c, owner, false);
+        }
     }
 
     // Mints an NFT if does not exist
@@ -98,6 +101,8 @@ contract SimpleERC721 {
 
     function _safeTransferFrom(address _from, address _to, uint256 _tokenid, bytes memory _data) private {
 
+        bytes4 retval;
+
         // First transfer the token
         // then check onERC721Receiver,
         // and finally revert() OR emit Transfer event
@@ -107,31 +112,17 @@ contract SimpleERC721 {
 
         if (isContract(_to)) {
 
-           try ERC721TokenReceiver(_to).onERC721Received(
+           retval = ERC721TokenReceiver(_to).onERC721Received(
                 msg.sender, 
                 _from,
                 _tokenid,
-                _data) returns (bytes4 retval)
-           {
+                _data);
 
-               if (retval != 0x150b7a02) {
-                  // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
-                  revert("Transfer not accepted");
-               }
-
-           } catch (bytes memory error)  {
-
-               if (error.length == 0) {
-                   // unimplemented by called contract 
-                   // throw because the return value is not 0x150b7a02
-                   revert("Receiver does not support ERC721Receiver interface");
-               } else {
-                   // reverted by called contract
-                   
-                   revert("Contract reverted after calling onERC721Receiver");
-               }
-               
+           if (retval != 0x150b7a02) {
+              // 0x150b7a02 == bytes4(keccak256("onERC721Received(address,address,uint256,bytes)") )
+              revert("Transfer not accepted");
            }
+
         }
     }
 

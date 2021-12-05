@@ -6,7 +6,7 @@
 import pytest
 import logging
 import web3
-from brownie import accounts, testERC721Receiver, exceptions, reverts, ZERO_ADDRESS
+from brownie import accounts, testERC721Receiver, revertsERC721Receiver, exceptions, reverts, ZERO_ADDRESS
 
     
 def test_dumyERC721Receiver():
@@ -22,4 +22,13 @@ def test_dumyERC721Receiver():
     receiver2 = accounts[0].deploy(testERC721Receiver, True)
     tx = receiver2.onERC721Received(alice, bob, 123, b"ig.no.red")
     assert tx.return_value == web3.types.HexStr("0x150b7a02")
+
+def test_revertsERC721Reveiver():
+    
+    alice, bob = [ x.address for x in accounts[0:2]]
+
+    # This contract always reverts
+    reverter = accounts[1].deploy(revertsERC721Receiver)
+    with reverts():
+      tx = reverter.onERC721Received(bob, alice, 234, b"reverts always")
 

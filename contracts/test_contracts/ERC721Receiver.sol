@@ -28,8 +28,12 @@ contract testERC721Receiver {
 }
 
 contract revertsERC721Receiver {
-   function onERC721Received(address, address, uint256, bytes calldata) external returns(bytes4) {
-       revert ("Called contract always reverts");
+   function onERC721Received(address a, address b, uint256 c, bytes calldata) external returns(bytes4) {
+      if (c > 100) {
+         revert ("Always reverts") ; }
+      else {
+         revert ("Always reverts");
+      }
    }
 
 }

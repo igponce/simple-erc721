@@ -29,6 +29,8 @@ def test_revertsERC721Reveiver():
 
     # This contract always reverts
     reverter = accounts[1].deploy(revertsERC721Receiver)
-    with reverts():
-      tx = reverter.onERC721Received(bob, alice, 234, b"reverts always")
+
+    for id in [100,200]:
+       with reverts():
+          reverter.onERC721Received(bob, alice, id, b"reverts always")
 

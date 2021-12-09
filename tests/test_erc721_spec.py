@@ -5,7 +5,7 @@
 import pytest
 import logging
 import web3
-from brownie import accounts, SimpleERC721 , testERC721Receiver, revertsERC721Receiver, exceptions, reverts, ZERO_ADDRESS
+from brownie import accounts, SimpleERC721 , testERC721Receiver, revertsERC721Receiver, TestProxy, exceptions, reverts, ZERO_ADDRESS
 
 Zeroaddress = '0x0000000000000000000000000000000000000000'
 
@@ -233,6 +233,7 @@ def test_safeTransferFrom(token):
     alwaysOK = accounts[0].deploy(testERC721Receiver, True)
     alwaysKO = accounts[0].deploy(testERC721Receiver, False)
     alwaysReverts = accounts[0].deploy(revertsERC721Receiver)
+    proxy = accounts[0].deploy(TestProxy, (token.address))
 
     # Setup authorized operators for all
 
@@ -247,7 +248,6 @@ def test_safeTransferFrom(token):
 
     with reverts():
        tx = token.safeTransferFrom(alice, token, 1, {'from': alice} )
-       #assert ee.revert_msg == "Receiver does not support ERC721Receiver interface"
 
     with reverts():
        # Contract that always reverts when called
@@ -260,11 +260,21 @@ def test_safeTransferFrom(token):
     # Now send it with some data attached
     with reverts():
        tx = token.safeTransferFrom(alice, alwaysReverts, 1, b"hello")
+    
+    # Successful cases
+
+    # Send to a contract that says OK! I _allow_ this transfer.
+    tx = token.safeTransferFrom(alice, alwaysOK, 2)
+
+    import pdb; pdb.set_trace()
+
+    # Send to an address using a proxy contract
+    token.approve(proxy, 5, {'from': alice})
+    tx = proxy.proxy_safeTransferFrom(alice, bob, 5)
 
     # Finally, send the token to a simple address
     tx = token.safeTransferFrom(alice, bob, 1, b"Transfer to a wallet, not a contract")
 
-    tx = token.safeTransferFrom(alice, alwaysOK, 2)
     
 def test_supportsInterface(token):
 

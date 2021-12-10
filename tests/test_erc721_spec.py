@@ -266,8 +266,6 @@ def test_safeTransferFrom(token):
     # Send to a contract that says OK! I _allow_ this transfer.
     tx = token.safeTransferFrom(alice, alwaysOK, 2)
 
-    import pdb; pdb.set_trace()
-
     # Send to an address using a proxy contract
     token.approve(proxy, 5, {'from': alice})
     tx = proxy.proxy_safeTransferFrom(alice, bob, 5)
